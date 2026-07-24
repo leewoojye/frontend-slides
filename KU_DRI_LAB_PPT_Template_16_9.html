@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KU DRI Lab Presentation Template</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===========================================
+       THEME TOKENS
+       =========================================== */
+    :root {
+      --stage-bg: #181416;
+      --slide-bg: #ffffff;
+      --crimson: #7a1025;
+      --ink: #1f1a1c;
+      --brown: #50362e;
+      --card: #e7e5e3;
+      --muted: #6e6669;
+      --watermark: #8f8f8f;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-normal: 280ms;
+    }
+
+    /* ===========================================
+       RESET
+       =========================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ===========================================
+       FIXED 16:9 STAGE: MANDATORY BASE STYLES
+       Include this ENTIRE file in every presentation.
+       Slides are authored at 1920×1080 and scaled as a whole.
+       =========================================== */
+
+    /* 1. Lock the browser viewport */
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+    }
+
+    /* 2. Full-window deck viewport */
+    .deck-viewport {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        background: var(--stage-bg, #000);
+    }
+
+    /* 3. Fixed 16:9 design canvas.
+       JavaScript sets transform: translate(...) scale(...). */
+    .deck-stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        transform-origin: 0 0;
+        background: var(--slide-bg, #fff);
+    }
+
+    /* 4. Slides stack inside the fixed stage.
+       Content must be laid out at 1920×1080, not reflowed per device. */
+    .slide {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        background: var(--slide-bg, #fff);
+    }
+
+    .slide.active,
+    .slide.visible {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        z-index: 1;
+    }
+
+    /* 5. Keep media inside authored slide bounds */
+    img,
+    video,
+    canvas,
+    svg {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    /* 6. Presentation chrome stays outside the slide design system */
+    .deck-controls {
+        position: fixed;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        z-index: 1000;
+    }
+
+    /* 7. Print one fixed-size slide per page */
+    @media print {
+        html,
+        body {
+            width: 1920px;
+            height: auto;
+            overflow: visible;
+            background: #fff;
+        }
+
+        .deck-viewport {
+            position: static;
+            overflow: visible;
+            background: #fff;
+        }
+
+        .deck-stage {
+            position: static;
+            width: auto;
+            height: auto;
+            transform: none !important;
+            background: none;
+        }
+
+        .slide {
+            position: relative;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            width: 1920px;
+            height: 1080px;
+            break-after: page;
+            page-break-after: always;
+        }
+
+        .slide:last-child {
+            break-after: auto;
+            page-break-after: auto;
+        }
+
+        .deck-controls {
+            display: none !important;
+        }
+    }
+
+    /* 8. Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.2s !important;
+        }
+    }
+
+    /* ===========================================
+       PRESENTATION TYPOGRAPHY AND MOTION
+       =========================================== */
+    body,
+    button {
+      font-family: "Noto Sans KR", sans-serif;
+    }
+
+    .slide {
+      color: var(--ink);
+      font-family: "Noto Sans KR", sans-serif;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity var(--duration-normal) var(--ease-out-expo),
+        transform var(--duration-normal) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .slide.visible .reveal:nth-child(2) { transition-delay: 70ms; }
+    .slide.visible .reveal:nth-child(3) { transition-delay: 120ms; }
+    .slide.visible .reveal:nth-child(4) { transition-delay: 170ms; }
+
+    /* ===========================================
+       SHARED BRAND ELEMENTS
+       =========================================== */
+    .brand-corner {
+      position: absolute;
+      top: 0;
+      right: 7px;
+      width: 82px;
+      height: 86px;
+      object-fit: contain;
+    }
+
+    .cover-dri-mark {
+      position: absolute;
+      left: 22px;
+      top: 980px;
+      width: 82px;
+      height: 85px;
+      object-fit: contain;
+    }
+
+    .cover-lab-name {
+      position: absolute;
+      left: 99px;
+      top: 1000px;
+      width: 462px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .cover-ku-logo {
+      position: absolute;
+      left: 884px;
+      top: 892px;
+      width: 152px;
+      height: 178px;
+      object-fit: contain;
+    }
+
+    .cover-author {
+      position: absolute;
+      left: 1488px;
+      top: 951px;
+      width: 432px;
+      height: 58px;
+      padding: 6px 14px;
+      font-size: 32px;
+      font-weight: 400;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ===========================================
+       COVER SLIDES
+       =========================================== */
+    .cover-title {
+      position: absolute;
+      left: 36px;
+      top: 182px;
+      width: 1848px;
+      min-height: 93px;
+      font-size: 80px;
+      line-height: 1.16;
+      letter-spacing: -.035em;
+      font-weight: 900;
+    }
+
+    .cover-subtitle {
+      position: absolute;
+      left: 36px;
+      top: 342px;
+      width: 1848px;
+      min-height: 48px;
+      font-size: 32px;
+      line-height: 1.35;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .cover-white .cover-title { color: var(--crimson); }
+    .cover-white .cover-subtitle { color: var(--muted); }
+
+    .cover-crimson::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 540px;
+      background: var(--crimson);
+    }
+
+    .cover-crimson .cover-title,
+    .cover-crimson .cover-subtitle {
+      color: #ffffff;
+    }
+
+    /* ===========================================
+       CONTENT TEMPLATE LAYOUTS
+       =========================================== */
+    .standard-title {
+      position: absolute;
+      left: 36px;
+      top: 8px;
+      width: 1740px;
+      min-height: 62px;
+      font-size: 38px;
+      line-height: 1.25;
+      font-weight: 900;
+      color: var(--crimson);
+    }
+
+    .contents-grid {
+      position: absolute;
+      left: 33px;
+      width: 1854px;
+      display: grid;
+      grid-template-columns: 455px 1357px;
+      column-gap: 42px;
+    }
+
+    .contents-grid.six {
+      top: 183px;
+      grid-auto-rows: 81px;
+      row-gap: 49px;
+    }
+
+    .contents-grid.ten {
+      top: 109px;
+      grid-auto-rows: 81px;
+      row-gap: 8px;
+    }
+
+    .contents-grid .slot {
+      display: flex;
+      align-items: center;
+      padding: 8px 14px;
+      font-size: 25px;
+      line-height: 1.3;
+      overflow: hidden;
+    }
+
+    .contents-grid .index-slot {
+      color: var(--crimson);
+      font-weight: 900;
+    }
+
+    .contents-grid .copy-slot {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .content-kicker {
+      position: absolute;
+      left: 36px;
+      top: 76px;
+      width: 1775px;
+      min-height: 38px;
+      font-size: 23px;
+      color: var(--muted);
+    }
+
+    .body-slot {
+      position: absolute;
+      left: 36px;
+      top: 126px;
+      width: 1812px;
+      height: 850px;
+      padding: 20px;
+      font-size: 30px;
+      line-height: 1.55;
+    }
+
+    .section-heading {
+      position: absolute;
+      left: 131px;
+      top: 135px;
+      width: 1657px;
+      height: 449px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 28px;
+      font-size: 88px;
+      line-height: 1.12;
+      font-weight: 900;
+      text-align: center;
+      color: var(--crimson);
+    }
+
+    .section-copy {
+      position: absolute;
+      left: 131px;
+      top: 602px;
+      width: 1657px;
+      min-height: 130px;
+      padding: 24px;
+      font-size: 30px;
+      line-height: 1.45;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .title-only-heading {
+      position: absolute;
+      left: 36px;
+      top: 8px;
+      width: 1740px;
+      min-height: 62px;
+      font-size: 38px;
+      line-height: 1.25;
+      font-weight: 900;
+      color: var(--crimson);
+    }
+
+    /* ===========================================
+       Q&A AND CLOSING SLIDES
+       =========================================== */
+    .center-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 18px;
+      font-size: 108px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -.05em;
+    }
+
+    .thank-you {
+      font-size: 108px;
+      letter-spacing: -.055em;
+    }
+
+    /* ===========================================
+       ABOUT ME SLIDE
+       =========================================== */
+    .about-heading {
+      position: absolute;
+      left: 41px;
+      top: 36px;
+      font-size: 80px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -.035em;
+      color: var(--crimson);
+    }
+
+    .about-subtitle {
+      position: absolute;
+      left: 41px;
+      top: 139px;
+      width: 780px;
+      font-size: 31px;
+      line-height: 1.48;
+      color: var(--muted);
+    }
+
+    .about-watermark {
+      position: absolute;
+      left: 1205px;
+      top: 288px;
+      width: 760px;
+      height: 760px;
+      object-fit: contain;
+      opacity: .34;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .profile-card {
+      position: absolute;
+      left: 602px;
+      top: 289px;
+      width: 716px;
+      height: 486px;
+      z-index: 2;
+      overflow: hidden;
+      border: 3px solid var(--brown);
+      border-radius: 0 0 0 74px;
+      background: rgba(231, 229, 227, .91);
+      box-shadow: 4px 4px 7px rgba(31, 26, 28, .24);
+    }
+
+    .profile-card .name-ko {
+      position: absolute;
+      left: 47px;
+      top: 38px;
+      width: 430px;
+      min-height: 86px;
+      font-size: 78px;
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: -.035em;
+    }
+
+    .profile-card .name-en {
+      position: absolute;
+      left: 47px;
+      top: 141px;
+      width: 480px;
+      min-height: 72px;
+      font-size: 60px;
+      line-height: 1.12;
+      font-weight: 600;
+      letter-spacing: -.025em;
+    }
+
+    .profile-card .card-ku-logo {
+      position: absolute;
+      right: 29px;
+      top: 74px;
+      width: 126px;
+      height: 148px;
+      object-fit: contain;
+    }
+
+    .profile-card .card-rule {
+      position: absolute;
+      left: 31px;
+      right: 31px;
+      top: 247px;
+      height: 6px;
+      background: var(--crimson);
+    }
+
+    .profile-card .email-row {
+      position: absolute;
+      left: 48px;
+      right: 38px;
+      bottom: 47px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 31px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .mail-icon {
+      display: inline-flex;
+      width: 58px;
+      height: 45px;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      line-height: 1;
+      color: #000;
+    }
+
+    .source-site {
+      position: absolute;
+      left: 16px;
+      bottom: 11px;
+      font-size: 23px;
+      color: #ece9e9;
+    }
+
+    /* ===========================================
+       ABOUT US SLIDE
+       =========================================== */
+    .about-us .about-subtitle {
+      left: 413px;
+      top: 40px;
+      width: 610px;
+      font-size: 28px;
+      line-height: 1.5;
+    }
+
+    .member-card {
+      position: absolute;
+      width: 714px;
+      height: 448px;
+      z-index: 2;
+      overflow: hidden;
+      border: 3px solid var(--brown);
+      border-radius: 0 0 0 74px;
+      background: rgba(231, 229, 227, .91);
+      box-shadow: 4px 4px 7px rgba(31, 26, 28, .22);
+    }
+
+    .member-card.card-1 { left: 211px; top: 150px; }
+    .member-card.card-2 { left: 1025px; top: 150px; }
+    .member-card.card-3 { left: 211px; top: 615px; }
+    .member-card.card-4 { left: 1025px; top: 615px; }
+
+    .member-card .member-ku-logo {
+      position: absolute;
+      right: 31px;
+      top: 37px;
+      width: 126px;
+      height: 148px;
+      object-fit: contain;
+    }
+
+    .member-card .member-name {
+      position: absolute;
+      left: 31px;
+      top: 39px;
+      width: 490px;
+      min-height: 82px;
+      font-size: 57px;
+      line-height: 1.12;
+      font-weight: 900;
+    }
+
+    .member-card .member-role {
+      position: absolute;
+      left: 31px;
+      top: 129px;
+      width: 480px;
+      min-height: 47px;
+      font-size: 27px;
+      line-height: 1.3;
+      color: var(--muted);
+    }
+
+    .member-card .card-rule {
+      position: absolute;
+      left: 31px;
+      right: 31px;
+      top: 210px;
+      height: 6px;
+      background: var(--crimson);
+    }
+
+    .member-card .member-email {
+      position: absolute;
+      left: 45px;
+      right: 35px;
+      bottom: 45px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-height: 48px;
+      font-size: 27px;
+      white-space: nowrap;
+    }
+
+    .about-us-watermark {
+      position: absolute;
+      left: 1205px;
+      top: 337px;
+      width: 760px;
+      height: 760px;
+      object-fit: contain;
+      opacity: .18;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ===========================================
+       INLINE EDITING
+       =========================================== */
+    [data-editable] {
+      min-width: 1px;
+      min-height: 1em;
+      outline: none;
+    }
+
+    body.editing [data-editable] {
+      outline: 2px dashed rgba(122, 16, 37, .38);
+      outline-offset: 3px;
+      background: rgba(122, 16, 37, .035);
+      cursor: text;
+    }
+
+    body.editing .cover-crimson [data-editable] {
+      outline-color: rgba(255, 255, 255, .55);
+      background: rgba(255, 255, 255, .07);
+    }
+
+    body.editing [data-editable]:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(80, 54, 46, .35);
+      pointer-events: none;
+    }
+
+    body.editing .cover-crimson [data-editable]:empty::before {
+      color: rgba(255, 255, 255, .45);
+    }
+
+    .edit-hotzone {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 80px;
+      z-index: 10000;
+      cursor: pointer;
+    }
+
+    .edit-toggle,
+    .save-toggle {
+      position: fixed;
+      top: 15px;
+      height: 42px;
+      padding: 0 15px;
+      border: 1px solid rgba(255, 255, 255, .24);
+      border-radius: 10px;
+      background: rgba(20, 17, 18, .88);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+      z-index: 10001;
+      cursor: pointer;
+    }
+
+    .edit-toggle { left: 15px; }
+    .save-toggle { left: 100px; }
+
+    .edit-toggle.show,
+    .edit-toggle.active,
+    .save-toggle.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ===========================================
+       OUT-OF-STAGE CONTROLS
+       =========================================== */
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 9px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 999px;
+      background: rgba(18, 15, 16, .72);
+      color: #fff;
+      opacity: .3;
+      transition: opacity 180ms ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .deck-controls:hover,
+    body.editing .deck-controls {
+      opacity: 1;
+    }
+
+    .nav-button {
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .nav-button:hover {
+      background: rgba(255, 255, 255, .12);
+    }
+
+    .page-indicator {
+      min-width: 70px;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: .08em;
+    }
+
+    @media print {
+      .edit-hotzone,
+      .edit-toggle,
+      .save-toggle {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="deck-viewport">
+    <main class="deck-stage" id="deckStage" aria-live="polite">
+      <!-- Slide 1: white title layout. Speaker notes: none in source PPTX. -->
+      <section class="slide cover-white active" aria-label="White title slide">
+        <div id="s1-title" class="cover-title reveal" data-editable data-placeholder="Presentation title">Distributed Robot Intelligence Lab</div>
+        <div id="s1-subtitle" class="cover-subtitle reveal" data-editable data-placeholder="Subtitle">Korea University · Department of Artificial Intelligence</div>
+        <img class="cover-dri-mark" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="Distributed Robot Intelligence Lab mark">
+        <div class="cover-lab-name">Distributed Robot Intelligence Lab</div>
+        <img class="cover-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+      </section>
+
+      <!-- Slide 2: crimson title layout. Speaker notes: none in source PPTX. -->
+      <section class="slide cover-crimson" aria-label="Crimson title slide">
+        <div id="s2-title" class="cover-title reveal" data-editable data-placeholder="Presentation title">Distributed Robot Intelligence Lab</div>
+        <div id="s2-subtitle" class="cover-subtitle reveal" data-editable data-placeholder="Subtitle">Korea University · Department of Artificial Intelligence</div>
+        <img class="cover-dri-mark" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="Distributed Robot Intelligence Lab mark">
+        <div class="cover-lab-name">Distributed Robot Intelligence Lab</div>
+        <img class="cover-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+        <div id="s2-author" class="cover-author reveal" data-editable data-placeholder="Name">Woo Jye Lee</div>
+      </section>
+
+      <!-- Slide 3: six-item contents layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Six item contents slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s3-title" class="standard-title" data-editable data-placeholder="Contents title"></div>
+        <div class="contents-grid six">
+          <div id="s3-i1" class="slot index-slot" data-editable data-placeholder="01"></div><div id="s3-c1" class="slot copy-slot" data-editable data-placeholder="First section"></div>
+          <div id="s3-i2" class="slot index-slot" data-editable data-placeholder="02"></div><div id="s3-c2" class="slot copy-slot" data-editable data-placeholder="Second section"></div>
+          <div id="s3-i3" class="slot index-slot" data-editable data-placeholder="03"></div><div id="s3-c3" class="slot copy-slot" data-editable data-placeholder="Third section"></div>
+          <div id="s3-i4" class="slot index-slot" data-editable data-placeholder="04"></div><div id="s3-c4" class="slot copy-slot" data-editable data-placeholder="Fourth section"></div>
+          <div id="s3-i5" class="slot index-slot" data-editable data-placeholder="05"></div><div id="s3-c5" class="slot copy-slot" data-editable data-placeholder="Fifth section"></div>
+          <div id="s3-i6" class="slot index-slot" data-editable data-placeholder="06"></div><div id="s3-c6" class="slot copy-slot" data-editable data-placeholder="Sixth section"></div>
+        </div>
+      </section>
+
+      <!-- Slide 4: ten-item contents layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Ten item contents slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s4-title" class="standard-title" data-editable data-placeholder="Contents title"></div>
+        <div class="contents-grid ten">
+          <div id="s4-i1" class="slot index-slot" data-editable data-placeholder="01"></div><div id="s4-c1" class="slot copy-slot" data-editable data-placeholder="First section"></div>
+          <div id="s4-i2" class="slot index-slot" data-editable data-placeholder="02"></div><div id="s4-c2" class="slot copy-slot" data-editable data-placeholder="Second section"></div>
+          <div id="s4-i3" class="slot index-slot" data-editable data-placeholder="03"></div><div id="s4-c3" class="slot copy-slot" data-editable data-placeholder="Third section"></div>
+          <div id="s4-i4" class="slot index-slot" data-editable data-placeholder="04"></div><div id="s4-c4" class="slot copy-slot" data-editable data-placeholder="Fourth section"></div>
+          <div id="s4-i5" class="slot index-slot" data-editable data-placeholder="05"></div><div id="s4-c5" class="slot copy-slot" data-editable data-placeholder="Fifth section"></div>
+          <div id="s4-i6" class="slot index-slot" data-editable data-placeholder="06"></div><div id="s4-c6" class="slot copy-slot" data-editable data-placeholder="Sixth section"></div>
+          <div id="s4-i7" class="slot index-slot" data-editable data-placeholder="07"></div><div id="s4-c7" class="slot copy-slot" data-editable data-placeholder="Seventh section"></div>
+          <div id="s4-i8" class="slot index-slot" data-editable data-placeholder="08"></div><div id="s4-c8" class="slot copy-slot" data-editable data-placeholder="Eighth section"></div>
+          <div id="s4-i9" class="slot index-slot" data-editable data-placeholder="09"></div><div id="s4-c9" class="slot copy-slot" data-editable data-placeholder="Ninth section"></div>
+          <div id="s4-i10" class="slot index-slot" data-editable data-placeholder="10"></div><div id="s4-c10" class="slot copy-slot" data-editable data-placeholder="Tenth section"></div>
+        </div>
+      </section>
+
+      <!-- Slide 5: title and content layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Title and content slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s5-title" class="standard-title" data-editable data-placeholder="Slide title"></div>
+        <div id="s5-kicker" class="content-kicker" data-editable data-placeholder="Section or subtitle"></div>
+        <div id="s5-body" class="body-slot" data-editable data-placeholder="Add text, images, or other content"></div>
+      </section>
+
+      <!-- Slide 6: section header layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Section header slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s6-title" class="section-heading reveal" data-editable data-placeholder="Section title"></div>
+        <div id="s6-copy" class="section-copy reveal" data-editable data-placeholder="Section description"></div>
+      </section>
+
+      <!-- Slide 7: title-only layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Title only slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s7-title" class="title-only-heading" data-editable data-placeholder="Slide title"></div>
+      </section>
+
+      <!-- Slide 8: blank layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Blank branded slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+      </section>
+
+      <!-- Slide 9: Q&A layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Questions and answers slide">
+        <img class="brand-corner" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-mark.png" alt="">
+        <div id="s9-title" class="center-message reveal" data-editable data-placeholder="Q&A">Q&amp;A</div>
+      </section>
+
+      <!-- Slide 10: closing layout. Speaker notes: none in source PPTX. -->
+      <section class="slide" aria-label="Thank you slide">
+        <div id="s10-title" class="center-message thank-you reveal" data-editable data-placeholder="Thank you">Thank you</div>
+      </section>
+
+      <!-- Slide 11: about-me layout. Speaker notes: none in source PPTX. -->
+      <section class="slide about-me" aria-label="About me slide">
+        <div id="s11-heading" class="about-heading reveal" data-editable data-placeholder="About me">About me</div>
+        <div id="s11-subtitle" class="about-subtitle reveal" data-editable data-placeholder="Department and affiliation">Department of Artificial Intelligence,<br>Korea University, Seoul, Republic of Korea</div>
+        <img class="about-watermark" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-network.png" alt="">
+        <article class="profile-card reveal">
+          <div id="s11-name-ko" class="name-ko" lang="ko" data-editable data-placeholder="Korean name">이우제</div>
+          <div id="s11-name-en" class="name-en" data-editable data-placeholder="English name">Woo Jye Lee</div>
+          <img class="card-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+          <div class="card-rule"></div>
+          <div class="email-row"><span class="mail-icon" aria-hidden="true">✉</span><span id="s11-email" data-editable data-placeholder="Email">learnin9deeplearning@gmail.com</span></div>
+        </article>
+        <div class="source-site">sites.google.com/view/drilab/home</div>
+      </section>
+
+      <!-- Slide 12: four-member about-us layout. Speaker notes: none in source PPTX. -->
+      <section class="slide about-us" aria-label="About us slide">
+        <div id="s12-heading" class="about-heading reveal" data-editable data-placeholder="About us">About us</div>
+        <div id="s12-subtitle" class="about-subtitle reveal" data-editable data-placeholder="Department and affiliation">Department of Artificial Intelligence,<br>Korea University, Seoul, Republic of Korea</div>
+        <img class="about-us-watermark" src="KU_DRI_LAB_PPT_Template_16_9-assets/dri-network.png" alt="">
+
+        <article class="member-card card-1 reveal">
+          <div id="s12-name-1" class="member-name" data-editable data-placeholder="Member name"></div>
+          <div id="s12-role-1" class="member-role" data-editable data-placeholder="Role or research area"></div>
+          <img class="member-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+          <div class="card-rule"></div>
+          <div class="member-email"><span class="mail-icon" aria-hidden="true">✉</span><span id="s12-email-1" data-editable data-placeholder="Email"></span></div>
+        </article>
+
+        <article class="member-card card-2 reveal">
+          <div id="s12-name-2" class="member-name" data-editable data-placeholder="Member name"></div>
+          <div id="s12-role-2" class="member-role" data-editable data-placeholder="Role or research area"></div>
+          <img class="member-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+          <div class="card-rule"></div>
+          <div class="member-email"><span class="mail-icon" aria-hidden="true">✉</span><span id="s12-email-2" data-editable data-placeholder="Email"></span></div>
+        </article>
+
+        <article class="member-card card-3 reveal">
+          <div id="s12-name-3" class="member-name" data-editable data-placeholder="Member name"></div>
+          <div id="s12-role-3" class="member-role" data-editable data-placeholder="Role or research area"></div>
+          <img class="member-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+          <div class="card-rule"></div>
+          <div class="member-email"><span class="mail-icon" aria-hidden="true">✉</span><span id="s12-email-3" data-editable data-placeholder="Email"></span></div>
+        </article>
+
+        <article class="member-card card-4 reveal">
+          <div id="s12-name-4" class="member-name" data-editable data-placeholder="Member name"></div>
+          <div id="s12-role-4" class="member-role" data-editable data-placeholder="Role or research area"></div>
+          <img class="member-ku-logo" src="KU_DRI_LAB_PPT_Template_16_9-assets/korea-university.png" alt="Korea University">
+          <div class="card-rule"></div>
+          <div class="member-email"><span class="mail-icon" aria-hidden="true">✉</span><span id="s12-email-4" data-editable data-placeholder="Email"></span></div>
+        </article>
+        <div class="source-site">sites.google.com/view/drilab/home</div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Controls intentionally live outside the fixed slide stage. -->
+  <nav class="deck-controls" aria-label="Slide navigation">
+    <button class="nav-button" id="prevSlide" type="button" aria-label="Previous slide">‹</button>
+    <span class="page-indicator" id="pageIndicator">1 / 12</span>
+    <button class="nav-button" id="nextSlide" type="button" aria-label="Next slide">›</button>
+  </nav>
+
+  <!-- Inline editing controls use JavaScript hover timing as required. -->
+  <div class="edit-hotzone" title="Edit mode (E)"></div>
+  <button class="edit-toggle" id="editToggle" type="button" title="Edit mode (E)">Edit</button>
+  <button class="save-toggle" id="saveToggle" type="button" title="Download edited HTML (Ctrl+S)">Save HTML</button>
+
+  <script>
+    /* ===========================================
+       SLIDE PRESENTATION CONTROLLER
+       =========================================== */
+    class SlidePresentation {
+      constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.currentSlide = this.initialSlideFromHash();
+        this.stage = document.getElementById('deckStage');
+        this.pageIndicator = document.getElementById('pageIndicator');
+        this.wheelLocked = false;
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.setupButtons();
+        this.setupEdgeClick();
+        this.showSlide(this.currentSlide, false);
+      }
+
+      initialSlideFromHash() {
+        const match = window.location.hash.match(/slide-(\d+)/);
+        return match ? Math.max(0, Number(match[1]) - 1) : 0;
+      }
+
+      setupStageScale() {
+        const scale = () => {
+          const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+          const x = (window.innerWidth - 1920 * factor) / 2;
+          const y = (window.innerHeight - 1080 * factor) / 2;
+          this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+      }
+
+      isEditingTarget(target) {
+        return target && (
+          target.getAttribute('contenteditable') === 'true' ||
+          ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+        );
+      }
+
+      setupKeyboardNav() {
+        document.addEventListener('keydown', (event) => {
+          if (event.ctrlKey || event.metaKey || this.isEditingTarget(event.target)) return;
+          if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(event.key)) {
+            event.preventDefault();
+            this.next();
+          } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(event.key)) {
+            event.preventDefault();
+            this.previous();
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            this.showSlide(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            this.showSlide(this.slides.length - 1);
+          }
+        });
+      }
+
+      setupTouchNav() {
+        this.stage.addEventListener('touchstart', (event) => {
+          this.touchStartX = event.changedTouches[0].clientX;
+          this.touchStartY = event.changedTouches[0].clientY;
+        }, { passive: true });
+
+        this.stage.addEventListener('touchend', (event) => {
+          const dx = event.changedTouches[0].clientX - this.touchStartX;
+          const dy = event.changedTouches[0].clientY - this.touchStartY;
+          if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+            dx < 0 ? this.next() : this.previous();
+          }
+        }, { passive: true });
+      }
+
+      setupWheelNav() {
+        window.addEventListener('wheel', (event) => {
+          if (this.wheelLocked || document.body.classList.contains('editing')) return;
+          if (Math.abs(event.deltaY) < 20) return;
+          this.wheelLocked = true;
+          event.deltaY > 0 ? this.next() : this.previous();
+          window.setTimeout(() => { this.wheelLocked = false; }, 650);
+        }, { passive: true });
+      }
+
+      setupButtons() {
+        document.getElementById('prevSlide').addEventListener('click', () => this.previous());
+        document.getElementById('nextSlide').addEventListener('click', () => this.next());
+      }
+
+      setupEdgeClick() {
+        this.stage.addEventListener('click', (event) => {
+          if (document.body.classList.contains('editing') || event.target.closest('button, a')) return;
+          const rect = this.stage.getBoundingClientRect();
+          const localX = event.clientX - rect.left;
+          if (localX < rect.width * .18) this.previous();
+          if (localX > rect.width * .82) this.next();
+        });
+      }
+
+      showSlide(index, updateHash = true) {
+        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, slideIndex) => {
+          const active = slideIndex === this.currentSlide;
+          slide.classList.toggle('active', active);
+          slide.classList.toggle('visible', active);
+          slide.setAttribute('aria-hidden', String(!active));
+        });
+        this.pageIndicator.textContent = `${this.currentSlide + 1} / ${this.slides.length}`;
+        if (updateHash) {
+          history.replaceState(null, '', `#slide-${this.currentSlide + 1}`);
+        }
+      }
+
+      next() { this.showSlide(this.currentSlide + 1); }
+      previous() { this.showSlide(this.currentSlide - 1); }
+    }
+
+    /* ===========================================
+       INLINE EDITOR WITH LOCAL AUTOSAVE
+       =========================================== */
+    class InlineEditor {
+      constructor() {
+        this.isActive = false;
+        this.storageKey = 'ku-dri-lab-frontend-slides-v1';
+        this.editables = Array.from(document.querySelectorAll('[data-editable][id]'));
+        this.editToggle = document.getElementById('editToggle');
+        this.saveToggle = document.getElementById('saveToggle');
+        this.restore();
+        this.bindEditingEvents();
+      }
+
+      bindEditingEvents() {
+        this.editables.forEach((element) => {
+          element.addEventListener('input', () => this.persist());
+          element.addEventListener('paste', (event) => {
+            event.preventDefault();
+            const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+            document.execCommand('insertText', false, text);
+          });
+        });
+      }
+
+      restore() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(this.storageKey) || '{}');
+          this.editables.forEach((element) => {
+            if (Object.prototype.hasOwnProperty.call(saved, element.id)) {
+              element.innerHTML = saved[element.id];
+            }
+          });
+        } catch (error) {
+          console.warn('Saved slide text could not be restored.', error);
+        }
+      }
+
+      persist() {
+        const values = {};
+        this.editables.forEach((element) => { values[element.id] = element.innerHTML; });
+        try {
+          localStorage.setItem(this.storageKey, JSON.stringify(values));
+        } catch (error) {
+          console.warn('Local autosave is unavailable.', error);
+        }
+      }
+
+      toggleEditMode(forceState) {
+        this.isActive = typeof forceState === 'boolean' ? forceState : !this.isActive;
+        document.body.classList.toggle('editing', this.isActive);
+        this.editToggle.classList.toggle('active', this.isActive);
+        this.editToggle.textContent = this.isActive ? 'Done' : 'Edit';
+        this.saveToggle.classList.toggle('show', this.isActive);
+        this.editables.forEach((element) => {
+          element.setAttribute('contenteditable', String(this.isActive));
+          element.setAttribute('spellcheck', String(this.isActive));
+        });
+        if (!this.isActive) {
+          document.getSelection()?.removeAllRanges();
+          this.persist();
+        }
+      }
+
+      downloadHtml() {
+        this.persist();
+        const wasEditing = this.isActive;
+        if (wasEditing) this.toggleEditMode(false);
+        const source = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([source], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'KU_DRI_LAB_PPT_Template_16_9-edited.html';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        if (wasEditing) this.toggleEditMode(true);
+      }
+    }
+
+    /* ===========================================
+       APPLICATION BOOTSTRAP AND EDIT HOTZONE
+       =========================================== */
+    const presentation = new SlidePresentation();
+    const editor = new InlineEditor();
+    const hotzone = document.querySelector('.edit-hotzone');
+    const editToggle = document.getElementById('editToggle');
+    const saveToggle = document.getElementById('saveToggle');
+    let hideTimeout = null;
+
+    document.getElementById('editToggle').addEventListener('click', () => editor.toggleEditMode());
+    document.getElementById('saveToggle').addEventListener('click', () => editor.downloadHtml());
+
+    hotzone.addEventListener('mouseenter', () => {
+      clearTimeout(hideTimeout);
+      editToggle.classList.add('show');
+    });
+
+    hotzone.addEventListener('mouseleave', () => {
+      hideTimeout = setTimeout(() => {
+        if (!editor.isActive) editToggle.classList.remove('show');
+      }, 400);
+    });
+
+    editToggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+    editToggle.addEventListener('mouseleave', () => {
+      hideTimeout = setTimeout(() => {
+        if (!editor.isActive) editToggle.classList.remove('show');
+      }, 400);
+    });
+
+    hotzone.addEventListener('click', () => editor.toggleEditMode());
+
+    document.addEventListener('keydown', (event) => {
+      const isEditable = event.target?.getAttribute('contenteditable') === 'true';
+      if ((event.key === 'e' || event.key === 'E') && !isEditable && !event.ctrlKey && !event.metaKey) {
+        editor.toggleEditMode();
+      }
+      if (event.key === 'Escape' && editor.isActive) {
+        editor.toggleEditMode(false);
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        editor.downloadHtml();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 .DS_Store
 .claude-design/
+.frontend-slides/
 node_modules/
 .vercel/
 *.log
