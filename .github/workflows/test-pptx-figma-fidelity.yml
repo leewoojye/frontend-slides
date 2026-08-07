@@ -1,0 +1,108 @@
+name: Test PPTX → Figma fidelity converter
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/pptx-to-figma-html.py"
+      - "scripts/images-to-flattened-pptx.py"
+      - "figma-plugin/pptx-fidelity-importer/**"
+      - "KU_DRI_LAB_PPT_Template_16_9.pptx"
+      - ".github/workflows/test-pptx-figma-fidelity.yml"
+
+jobs:
+  convert-ku-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install converter dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libreoffice poppler-utils fonts-noto-cjk
+          python -m pip install --upgrade pip
+          python -m pip install python-pptx
+
+      - name: Check source syntax
+        run: |
+          python -m py_compile scripts/pptx-to-figma-html.py scripts/images-to-flattened-pptx.py
+          node --check figma-plugin/pptx-fidelity-importer/code.js
+
+      - name: Convert KU DRI Lab PowerPoint template to editable-hybrid HTML
+        run: |
+          python scripts/pptx-to-figma-html.py \
+            KU_DRI_LAB_PPT_Template_16_9.pptx \
+            --output KU_DRI_LAB_PPT_Template_16_9.figma.html \
+            --work-dir .figma-conversion-work
+
+      - name: Render original PPTX exactly as a whole slide
+        run: |
+          mkdir -p exact-render/pdf exact-render/png exact-render/pages
+          libreoffice --headless --convert-to pdf --outdir exact-render/pdf KU_DRI_LAB_PPT_Template_16_9.pptx
+          pdfseparate exact-render/pdf/KU_DRI_LAB_PPT_Template_16_9.pdf exact-render/pages/slide-%d.pdf
+          for f in exact-render/pages/slide-*.pdf; do
+            n=$(basename "$f" .pdf | sed 's/slide-//')
+            printf -v nn '%02d' "$n"
+            pdftocairo -png -singlefile -scale-to-x 1920 -scale-to-y 1080 "$f" "exact-render/png/slide-$nn"
+          done
+          python scripts/images-to-flattened-pptx.py \
+            exact-render/png \
+            KU_DRI_LAB_PPT_Template_16_9_Figma_EXACT_flattened.pptx
+
+      - name: Validate exact render
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from pptx import Presentation
+          pngs = sorted(Path('exact-render/png').glob('slide-*.png'))
+          assert len(pngs) == 12, f'expected 12 rendered slides, got {len(pngs)}'
+          prs = Presentation('KU_DRI_LAB_PPT_Template_16_9_Figma_EXACT_flattened.pptx')
+          assert len(prs.slides) == 12
+          assert all(len(slide.shapes) == 1 for slide in prs.slides)
+          print('exact rendered PNGs:', len(pngs))
+          print('flattened PPTX slides:', len(prs.slides))
+          PY
+
+      - name: Validate standalone HTML manifest
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          path = Path("KU_DRI_LAB_PPT_Template_16_9.figma.html")
+          text = path.read_text(encoding="utf-8")
+          match = re.search(
+              r'<script id="figma-deck-manifest" type="application/json">(.*?)</script>',
+              text,
+              re.S,
+          )
+          assert match, "missing embedded Figma manifest"
+          deck = json.loads(match.group(1))
+          assert deck["width"] == 1920.0
+          assert deck["height"] == 1080.0
+          assert len(deck["slides"]) == 12
+          assert all(slide.get("svg", "").lstrip().startswith("<svg") for slide in deck["slides"])
+          assert sum(len(slide.get("textLayers", [])) for slide in deck["slides"]) > 0
+          print("slides:", len(deck["slides"]))
+          PY
+
+      - name: Upload exact-mode results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ku-dri-lab-figma-exact-mode
+          path: |
+            exact-render/png/*.png
+            KU_DRI_LAB_PPT_Template_16_9_Figma_EXACT_flattened.pptx
+          retention-days: 7
+
+      - name: Upload editable-hybrid HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: ku-dri-lab-figma-html
+          path: KU_DRI_LAB_PPT_Template_16_9.figma.html
+          retention-days: 7
