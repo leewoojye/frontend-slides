@@ -1,0 +1,16 @@
+{
+  "name": "Frontend Slides PPTX Fidelity Importer",
+  "id": "1536762953215573001",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "slides"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ]
+  }
+}
